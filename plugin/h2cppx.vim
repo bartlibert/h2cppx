@@ -69,7 +69,7 @@ endfunction
 
 "full generate cpp file
 function s:h2cppx(header_file, isClipboard)
-    let filename = expand('%:r') . "." . s:postfix
+    let filename = expand('%:t:r') . "." . s:postfix
     let cpp_file = findfile(filename, join(s:search_list,","))
 
     let cmd = printf('%s "%s" -t "%s" "%s" ', s:python_path, s:h2cppx_path, s:template_file, a:header_file)
@@ -112,7 +112,7 @@ endfunction
 
 function s:h2cppx_line(header_file, line_number, isClipboard)
     let ln = a:line_number
-    let filename = expand('%:r') . "." . s:postfix
+    let filename = expand('%:t:r') . "." . s:postfix
     let cpp_file = findfile(filename, join(s:search_list,","))
 
     let cmd = printf('%s "%s" "%s" -t "%s" -ln %d -a', s:python_path, s:h2cppx_path, a:header_file, s:template_file, ln)
@@ -155,7 +155,7 @@ endfunction
 
 function s:h2cppx_auto(header_file)
     let search_path = ""
-    let filename = expand('%:r') . "." . s:postfix
+    let filename = expand('%:t:r') . "." . s:postfix
     let cpp_file = findfile(filename, join(s:search_list,","))
 
     let cmd = printf('%s "%s" -t "%s" "%s" -auto -p %s ', s:python_path, s:h2cppx_path, s:template_file, a:header_file, s:postfix)
@@ -171,7 +171,7 @@ function s:h2cppx_auto(header_file)
 
     while 1
         if v:shell_error == 0
-            "let filename = expand('%:r') . "." . s:postfix
+            "let filename = expand('%:t:r') . "." . s:postfix
             "echo "Append code to " . filename . " successful!"
             echo content
         elseif v:shell_error == 1
