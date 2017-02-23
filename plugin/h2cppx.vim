@@ -2,8 +2,8 @@ if(exists('b:h2cppx')) | finish | endif
 
 let b:h2cppx = 1
 
-if(exists('g:h2cppx'))  
-    finish 
+if(exists('g:h2cppx'))
+    finish
 endif
 
 let g:h2cppx = 1
@@ -97,9 +97,9 @@ function s:h2cppx(header_file, isClipboard)
         elseif v:shell_error == 1
             echo content
         elseif v:shell_error == 2
-            echo content 
+            echo content
         elseif v:shell_error == 3
-            echo content 
+            echo content
         elseif v:shell_error == 4
             let ans = input("file already exisit, force overwrite it?(yes/no): ")
             if toupper(ans) == "YES" || toupper(ans) == "Y"
@@ -181,9 +181,9 @@ function s:h2cppx_auto(header_file)
         elseif v:shell_error == 1
             echo content
         elseif v:shell_error == 2
-            echo content 
+            echo content
         elseif v:shell_error == 3
-            echo content 
+            echo content
         elseif v:shell_error == 4
             echohl WarningMsg | echo "unknow error" | echohl None
         elseif v:shell_error == 5
@@ -212,6 +212,6 @@ command! -buffer -nargs=0 H2cppxLine call H2cppxLine(0)
 "generate cpp define and put in clipboard
 command! -buffer -nargs=0 CpH2cppx call H2cppx(1)
 command! -buffer -nargs=0 CpH2cppxLine call H2cppxLine(1)
-"auto generate cpp define 
+"auto generate cpp define
 command! -buffer -nargs=0 H2cppxAuto call H2cppxAuto()
 
