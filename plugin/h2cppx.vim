@@ -38,21 +38,25 @@ let s:h2cppx_path= s:h2cppx_dir . "/h2cppx.py"
 if (stridx(s:template_file,'/') != 0)
     let s:template_file= s:installed_directory . "/h2cppx/template/" . s:template_file
 endif
-let s:config_file = findfile(".h2cppx_conf", ".;")
-if (s:config_file != "")
-    let s:config_file = fnamemodify(s:config_file,":p")
-    let s:config_dir  = fnamemodify(s:config_file, ":p:h")
-    let s:search_list = readfile(s:config_file)
-    let s:i = 0
-    while s:i < len(s:search_list)
-        if (stridx(s:search_list[s:i],'/') != 0)
-            let s:search_list[s:i] = s:config_dir . '/' . s:search_list[s:i]
+
+function s:get_search_list()
+    let l:config_file = findfile(".h2cppx_conf", ".;")
+    if (l:config_file != "")
+        let l:config_file = fnamemodify(l:config_file,":p")
+        let l:config_dir  = fnamemodify(l:config_file, ":p:h")
+        let l:search_list = readfile(l:config_file)
+        let l:i = 0
+        while l:i < len(l:search_list)
+            if (stridx(l:search_list[l:i],'/') != 0)
+                let l:search_list[l:i] = l:config_dir . '/' . l:search_list[l:i]
         endif
-        let s:i = s:i + 1
+            let l:i = l:i + 1
     endwhile
-else
-    let s:search_list = []
-endif
+    else
+        let l:search_list = []
+    endif
+    return l:search_list
+endfunction
 
 "get full path
 function s:fullpath(path)
@@ -70,7 +74,7 @@ endfunction
 "full generate cpp file
 function s:h2cppx(header_file, isClipboard)
     let filename = expand('%:t:r') . "." . s:postfix
-    let cpp_file = findfile(filename, join(s:search_list,","))
+    let cpp_file = findfile(filename, join(s:get_search_list(),","))
 
     let cmd = printf('%s "%s" -t "%s" "%s" ', s:python_path, s:h2cppx_path, s:template_file, a:header_file)
     if ! (a:isClipboard == 1)
@@ -113,7 +117,7 @@ endfunction
 function s:h2cppx_line(header_file, line_number, isClipboard)
     let ln = a:line_number
     let filename = expand('%:t:r') . "." . s:postfix
-    let cpp_file = findfile(filename, join(s:search_list,","))
+    let cpp_file = findfile(filename, join(s:get_search_list(),","))
 
     let cmd = printf('%s "%s" "%s" -t "%s" -ln %d -a', s:python_path, s:h2cppx_path, a:header_file, s:template_file, ln)
     if ! (a:isClipboard == 1)
@@ -156,11 +160,11 @@ endfunction
 function s:h2cppx_auto(header_file)
     let search_path = ""
     let filename = expand('%:t:r') . "." . s:postfix
-    let cpp_file = findfile(filename, join(s:search_list,","))
+    let cpp_file = findfile(filename, join(s:get_search_list(),","))
 
     let cmd = printf('%s "%s" -t "%s" "%s" -auto -p %s ', s:python_path, s:h2cppx_path, s:template_file, a:header_file, s:postfix)
-    if len(s:search_list) != 0
-        let cmd = cmd . "--search-path=" . join(s:search_list,',')
+    if len(s:get_search_list()) != 0
+        let cmd = cmd . "--search-path=" . join(s:get_search_list(),',')
     endif
 
     if cpp_file == ""
