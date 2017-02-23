@@ -15,7 +15,7 @@ else
     let s:python_path = 'python'
 endif
 if(exists('g:h2cppx_postfix'))
-    let s:postfix = substitute(g:h2cppx_postfix,'\.',"","")
+    let s:postfix = substitute(g:h2cppx_postfix,'\.','','')
 else
     let s:postfix = 'cpp'
 endif
@@ -26,24 +26,24 @@ else
 endif
 
 
-if(system(s:python_path . ' -c "import sys; print sys.version_info[0]"') != "2\n")
-    echohl WarningMsg | echomsg "load h2cppx faild,python2.x is must need for h2cppx." | echohl None
+if(system(s:python_path . ' -c "import sys; print sys.version_info[0]"') !=? "2\n")
+    echohl WarningMsg | echomsg 'load h2cppx faild,python2.x is must need for h2cppx.' | echohl None
     finish
 endif
 
 let s:installed_directory = expand('<sfile>:p:h:h')
-let s:h2cppx_dir = s:installed_directory . "/h2cppx"
-let s:h2cppx_path= s:h2cppx_dir . "/h2cppx.py"
+let s:h2cppx_dir = s:installed_directory . '/h2cppx'
+let s:h2cppx_path= s:h2cppx_dir . '/h2cppx.py'
 
 if (stridx(s:template_file,'/') != 0)
-    let s:template_file= s:installed_directory . "/h2cppx/template/" . s:template_file
+    let s:template_file= s:installed_directory . '/h2cppx/template/' . s:template_file
 endif
 
 function s:get_search_list()
-    let l:config_file = findfile(".h2cppx_conf", ".;")
-    if (l:config_file != "")
-        let l:config_file = fnamemodify(l:config_file,":p")
-        let l:config_dir  = fnamemodify(l:config_file, ":p:h")
+    let l:config_file = findfile('.h2cppx_conf', '.;')
+    if (l:config_file !=# '')
+        let l:config_file = fnamemodify(l:config_file,':p')
+        let l:config_dir  = fnamemodify(l:config_file, ':p:h')
         let l:search_list = readfile(l:config_file)
         let l:i = 0
         while l:i < len(l:search_list)
@@ -60,89 +60,89 @@ endfunction
 
 "get full path
 function s:fullpath(path)
-    let dir = a:path
-    let dir = fnamemodify(dir, ":p")
-    if strlen(dir)!=0 && (stridx(dir,'/')!=0)
-        let dir = fnamemodify(".",":p") . dir
+    let l:dir = a:path
+    let l:dir = fnamemodify(l:dir, ':p')
+    if strlen(l:dir)!=0 && (stridx(l:dir,'/')!=0)
+        let l:dir = fnamemodify('.',':p') . l:dir
     endif
-    if strridx(dir,'/') != (strlen(dir)-1)
-        let dir = dir . '/'
+    if strridx(l:dir,'/') != (strlen(l:dir)-1)
+        let l:dir = l:dir . '/'
     endif
-    return dir
+    return l:dir
 endfunction
 
 "full generate cpp file
 function s:h2cppx(header_file, isClipboard)
-    let filename = expand('%:t:r') . "." . s:postfix
-    let cpp_file = findfile(filename, join(s:get_search_list(),","))
+    let l:filename = expand('%:t:r') . '.' . s:postfix
+    let l:cpp_file = findfile(l:filename, join(s:get_search_list(),','))
 
-    let cmd = printf('%s "%s" -t "%s" "%s" ', s:python_path, s:h2cppx_path, s:template_file, a:header_file)
+    let l:cmd = printf('%s "%s" -t "%s" "%s" ', s:python_path, s:h2cppx_path, s:template_file, a:header_file)
     if ! (a:isClipboard == 1)
-        if cpp_file == ""
-            let dir = input("Cpp File not find, please enter the new file output directory: ")
-            let cpp_file = s:fullpath(dir) . filename
+        if l:cpp_file ==# ''
+            let l:dir = input('Cpp File not find, please enter the new file output directory: ')
+            let l:cpp_file = s:fullpath(l:dir) . l:filename
         endif
-        let cmd = cmd . " -o " . cpp_file
+        let l:cmd = l:cmd . ' -o ' . l:cpp_file
     endif
-    let content = system(cmd)
+    let l:content = system(l:cmd)
 
     while 1
         if v:shell_error == 0
             if a:isClipboard == 1
-                call setreg('"+', content )
-                echo "Define code already copy to your clipboard,use p to paster!"
+                call setreg('"+', l:content )
+                echo 'Define code already copy to your clipboard,use p to paster!'
             else
-                echo "Generate file " . cpp_file . " successful!"
+                echo 'Generate file ' . l:cpp_file . ' successful!'
             endif
         elseif v:shell_error == 1
-            echo content
+            echo l:content
         elseif v:shell_error == 2
-            echo content
+            echo l:content
         elseif v:shell_error == 3
-            echo content
+            echo l:content
         elseif v:shell_error == 4
-            let ans = input("file already exisit, force overwrite it?(yes/no): ")
-            if toupper(ans) == "YES" || toupper(ans) == "Y"
-                let cmd = printf('%s "%s" "%s" -t "%s" -o "%s" -f', s:python_path, s:h2cppx_path, a:header_file, s:template_file, cpp_file)
-                let content = system(cmd)
+            let l:ans = input('file already exisit, force overwrite it?(yes/no): ')
+            if l:ans ==? 'yes' || l:ans ==? 'y'
+                let l:cmd = printf('%s "%s" "%s" -t "%s" -o "%s" -f', s:python_path, s:h2cppx_path, a:header_file, s:template_file, l:cpp_file)
+                let l:content = system(l:cmd)
                 continue
             endif
         elseif v:shell_error == 5
-            echohl WarningMsg | echo "IO error\n" . content | echohl None
+            echohl WarningMsg | echo "IO error\n" . l:content | echohl None
         endif
         break
     endwhile
 endfunction
 
 function s:h2cppx_line(header_file, line_number, isClipboard)
-    let ln = a:line_number
-    let filename = expand('%:t:r') . "." . s:postfix
-    let cpp_file = findfile(filename, join(s:get_search_list(),","))
+    let l:ln = a:line_number
+    let l:filename = expand('%:t:r') . '.' . s:postfix
+    let l:cpp_file = findfile(l:filename, join(s:get_search_list(),','))
 
-    let cmd = printf('%s "%s" "%s" -t "%s" -ln %d -a', s:python_path, s:h2cppx_path, a:header_file, s:template_file, ln)
+    let l:cmd = printf('%s "%s" "%s" -t "%s" -ln %d -a', s:python_path, s:h2cppx_path, a:header_file, s:template_file, l:ln)
     if ! (a:isClipboard == 1)
-        if cpp_file == ""
-            let dir = input("Cpp File not find, please enter the new file output directory: ")
-            let cpp_file = s:fullpath(dir) . filename
+        if l:cpp_file ==# ''
+            let l:dir = input('Cpp File not find, please enter the new file output directory: ')
+            let l:cpp_file = s:fullpath(l:dir) . l:filename
         endif
-        let cmd = cmd . " -o " . cpp_file
+        let l:cmd = l:cmd . ' -o ' . l:cpp_file
     endif
-    let content = system(cmd)
+    let l:content = system(l:cmd)
 
     while 1
         if v:shell_error == 0
             if a:isClipboard == 1
-                call setreg('"+', content . "\n")
-                echo "Define code already copy to your clipboard,use p to paster!"
+                call setreg('"+', l:content . "\n")
+                echo 'Define code already copy to your clipboard,use p to paster!'
             else
-                echo "write file " . cpp_file . " successful!"
+                echo 'write file ' . l:cpp_file . ' successful!'
             endif
         elseif v:shell_error == 1
-            echo content
+            echo l:content
         elseif v:shell_error == 2
-            echohl WarningMsg | echo content | echohl None
+            echohl WarningMsg | echo l:content | echohl None
         elseif v:shell_error == 3
-            echohl WarningMsg | echo content | echohl None
+            echohl WarningMsg | echo l:content | echohl None
         elseif v:shell_error == 4
             "let ans = input("file already exisit, append to file tail?(yes/no): ")
             "if toupper(ans) == "YES" || toupper(ans) == "Y"
@@ -151,43 +151,43 @@ function s:h2cppx_line(header_file, line_number, isClipboard)
             "    continue
             "endif
         elseif v:shell_error == 5
-            echohl WarningMsg | echo "IO error\n" . content | echohl None
+            echohl WarningMsg | echo "IO error\n" . l:content | echohl None
         endif
         break
     endwhile
 endfunction
 
 function s:h2cppx_auto(header_file)
-    let search_path = ""
-    let filename = expand('%:t:r') . "." . s:postfix
-    let cpp_file = findfile(filename, join(s:get_search_list(),","))
+    let l:search_path = ''
+    let l:filename = expand('%:t:r') . '.' . s:postfix
+    let l:cpp_file = findfile(l:filename, join(s:get_search_list(),','))
 
-    let cmd = printf('%s "%s" -t "%s" "%s" -auto -p %s ', s:python_path, s:h2cppx_path, s:template_file, a:header_file, s:postfix)
+    let l:cmd = printf('%s "%s" -t "%s" "%s" -auto -p %s ', s:python_path, s:h2cppx_path, s:template_file, a:header_file, s:postfix)
     if len(s:get_search_list()) != 0
-        let cmd = cmd . "--search-path=" . join(s:get_search_list(),',')
+        let l:cmd = l:cmd . '--search-path=' . join(s:get_search_list(),',')
     endif
 
-    if cpp_file == ""
-        let dir = input("Cpp File not find, please enter the new file output directory: ")
-        let cmd = cmd . " --output-path=" . s:fullpath(dir)
+    if l:cpp_file ==# ''
+        let l:dir = input('Cpp File not find, please enter the new file output directory: ')
+        let l:cmd = l:cmd . ' --output-path=' . s:fullpath(l:dir)
     endif
-    let content = system(cmd)
+    let l:content = system(l:cmd)
 
     while 1
         if v:shell_error == 0
             "let filename = expand('%:t:r') . "." . s:postfix
             "echo "Append code to " . filename . " successful!"
-            echo content
+            echo l:content
         elseif v:shell_error == 1
-            echo content
+            echo l:content
         elseif v:shell_error == 2
-            echo content
+            echo l:content
         elseif v:shell_error == 3
-            echo content
+            echo l:content
         elseif v:shell_error == 4
-            echohl WarningMsg | echo "unknow error" | echohl None
+            echohl WarningMsg | echo 'unknow error' | echohl None
         elseif v:shell_error == 5
-            echohl WarningMsg | echo "IO error\n" . content | echohl None
+            echohl WarningMsg | echo "IO error\n" . l:content | echohl None
         endif
         break
     endwhile
